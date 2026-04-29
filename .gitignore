@@ -50,6 +50,7 @@ Thumbs.db
 /infra/!jest.config.js
 /infra/*.d.ts
 /infra/node_modules
+/infra/lib/todo/node_modules
 
 # CDK asset staging directory
 /infra/.cdk.staging
