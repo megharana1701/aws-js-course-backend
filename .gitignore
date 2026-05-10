@@ -51,6 +51,7 @@ Thumbs.db
 /infra/*.d.ts
 /infra/node_modules
 /infra/lib/todo/node_modules
+/infra
 
 # CDK asset staging directory
 /infra/.cdk.staging

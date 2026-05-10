@@ -1,6 +1,7 @@
 export declare function main(event: any): Promise<{
     message: string;
 }>;
+export declare function importFileParser(event: any): Promise<void>;
 export declare function getProductList(): Promise<{
     count: any;
 }[]>;
@@ -13,3 +14,14 @@ export declare function getProductsById(event: any): Promise<{
     body?: undefined;
 }>;
 export declare function createProduct(event: any): Promise<import("@aws-sdk/lib-dynamodb").PutCommandOutput>;
+export declare function importProductsFile(event: any): Promise<{
+    statusCode: number;
+    body: string;
+    headers?: undefined;
+} | {
+    statusCode: number;
+    headers: {
+        "Access-Control-Allow-Origin": string;
+    };
+    body: string;
+}>;
