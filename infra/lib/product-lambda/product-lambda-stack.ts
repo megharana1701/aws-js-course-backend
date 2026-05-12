@@ -4,6 +4,14 @@ import * as path from "path";
 import * as apiGateway from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as sqs from "aws-cdk-lib/aws-sqs";
+import {
+  SqsEventSource,
+  SnsEventSource,
+} from "aws-cdk-lib/aws-lambda-event-sources";
+import * as sns from "aws-cdk-lib/aws-sns";
+import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
+import { ImportStack } from "./import-stack";
 export class ProductLambdaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -186,6 +194,54 @@ export class ProductLambdaStack extends cdk.Stack {
     api.root.addCorsPreflight({
       allowOrigins: ["http://localhost:4200"],
       allowMethods: ["GET", "POST"],
+    });
+
+    //catalog-batch-process
+
+    const catalogItemsQueue = new sqs.Queue(this, "catalogItemsQueue", {
+      visibilityTimeout: cdk.Duration.seconds(30),
+    });
+    const createProductTopic = new sns.Topic(this, "createProductTopic", {
+      topicName: "createProductTopic",
+    });
+
+    const catalogSQSLambdaFunction = new lambda.Function(
+      this,
+      "catalog-sqs-lambda",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        memorySize: 1024,
+        timeout: cdk.Duration.seconds(5),
+        handler: "handler.catalogSQS",
+        code: lambda.Code.fromAsset(path.join(__dirname, "./")),
+        environment: {
+          PRODUCTS_TABLE: "Products",
+          STOCK_TABLE: "stock",
+          SNS_TOPIC_ARN: createProductTopic.topicArn,
+        },
+      },
+    );
+
+    catalogSQSLambdaFunction.addEventSource(
+      new SqsEventSource(catalogItemsQueue, {
+        batchSize: 5,
+        maxBatchingWindow: cdk.Duration.seconds(20),
+      }),
+    );
+
+    productsTable.grantReadWriteData(catalogSQSLambdaFunction);
+    stockTable.grantReadWriteData(catalogSQSLambdaFunction);
+
+    //SNS
+
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription("megha_rana@epam.com"),
+    );
+
+    createProductTopic.grantPublish(catalogSQSLambdaFunction);
+
+    new ImportStack(this, "ImportS3tack", {
+      queue: catalogItemsQueue,
     });
   }
 }

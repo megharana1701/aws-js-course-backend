@@ -12,16 +12,21 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import { Readable } from "stream";
+import { SQSEvent } from "aws-lambda";
 import csv from "csv-parser";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomUUID } from "crypto";
 const client = new DynamoDBClient({});
 const dynamoDB = DynamoDBDocumentClient.from(client);
 const s3Client = new S3Client({ region: "ap-south-1" });
-
+const sqs = new SQSClient({});
+const sns = new SNSClient({});
 const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE!;
 const STOCK_TABLE = process.env.STOCK_TABLE!;
+const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN!;
 const BUCKET = process.env.BUCKET;
 
 export async function main(event: any) {
@@ -49,17 +54,42 @@ export async function importFileParser(event: any) {
     const response = await s3.send(command);
 
     const stream = response.Body as NodeJS.ReadableStream;
-    stream
-      .pipe(csv())
-      .on("data", (data) => {
-        console.log("Parsed record:", data);
-      })
-      .on("end", () => {
-        console.log("Done");
-      })
-      .on("error", (err) => {
-        console.error(err);
-      });
+
+    const promises: Promise<any>[] = [];
+
+    await new Promise<void>((resolve, reject) => {
+      stream
+        .pipe(csv())
+        .on("data", (data) => {
+          const isEmpty = Object.values(data).every((value) => value === "");
+
+          if (isEmpty) {
+            return;
+          }
+
+          promises.push(
+            sqs.send(
+              new SendMessageCommand({
+                QueueUrl: process.env.SQS_URL,
+                MessageBody: JSON.stringify({ product: data }),
+              }),
+            ),
+          );
+        })
+        .on("end", async () => {
+          try {
+            await Promise.all(promises);
+            console.log("Done");
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        })
+        .on("error", (err) => {
+          console.error(err);
+          reject(err);
+        });
+    });
   }
 }
 
@@ -179,4 +209,45 @@ export async function importProductsFile(event: any) {
       body: JSON.stringify({ message: error.message }),
     };
   }
+}
+
+export async function catalogSQS(event: SQSEvent) {
+  console.log("Received message:", event.Records[0].body);
+  const results = [];
+
+  for (const record of event.Records) {
+    try {
+      console.log("Processing record:", record.messageId);
+      const body = JSON.parse(record.body);
+      const result = await createProduct(body);
+      results.push({
+        messageId: record.messageId,
+        status: "SUCCESS",
+        result,
+      });
+      console.log(`Successfully processed ${record.messageId}`);
+    } catch (error) {
+      console.error(`Failed processing message ${record.messageId}:`, error);
+    }
+  }
+
+  if (results.length > 0) {
+    await sns.send(
+      new PublishCommand({
+        TopicArn: SNS_TOPIC_ARN,
+        Subject: "New products created",
+        Message: JSON.stringify(results, null, 2),
+      }),
+    );
+
+    console.log("SNS notification sent");
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "Products processed successfully",
+      results,
+    }),
+  };
 }
