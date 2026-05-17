@@ -1,3 +1,4 @@
+import { SQSEvent } from "aws-lambda";
 export declare function main(event: any): Promise<{
     message: string;
 }>;
@@ -23,5 +24,9 @@ export declare function importProductsFile(event: any): Promise<{
     headers: {
         "Access-Control-Allow-Origin": string;
     };
+    body: string;
+}>;
+export declare function catalogSQS(event: SQSEvent): Promise<{
+    statusCode: number;
     body: string;
 }>;
