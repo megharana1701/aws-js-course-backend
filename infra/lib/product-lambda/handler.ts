@@ -251,3 +251,9 @@ export async function catalogSQS(event: SQSEvent) {
     }),
   };
 }
+
+export async function authorizationDemo(event: any) {
+  return {
+    message: `SUCCESS with message ${event.message} 🎉`,
+  };
+}
