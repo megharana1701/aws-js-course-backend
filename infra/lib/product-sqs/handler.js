@@ -1,0 +1,7 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.main = main;
+function main(event) {
+    console.log("Received message:", event.Records[0].body);
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaGFuZGxlci5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbImhhbmRsZXIudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQSxvQkFFQztBQUZELFNBQWdCLElBQUksQ0FBQyxLQUFlO0lBQ2xDLE9BQU8sQ0FBQyxHQUFHLENBQUMsbUJBQW1CLEVBQUUsS0FBSyxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUMsQ0FBQyxJQUFJLENBQUMsQ0FBQztBQUMxRCxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgU1FTRXZlbnQgfSBmcm9tIFwiYXdzLWxhbWJkYVwiO1xyXG5cclxuZXhwb3J0IGZ1bmN0aW9uIG1haW4oZXZlbnQ6IFNRU0V2ZW50KSB7XHJcbiAgY29uc29sZS5sb2coXCJSZWNlaXZlZCBtZXNzYWdlOlwiLCBldmVudC5SZWNvcmRzWzBdLmJvZHkpO1xyXG59XHJcbiJdfQ==

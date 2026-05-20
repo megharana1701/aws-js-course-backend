@@ -51,8 +51,11 @@ Thumbs.db
 /infra/*.d.ts
 /infra/node_modules
 /infra/lib/todo/node_modules
-/infra
-
+/infra/lib/product-lambda/node_modules
+/infra/.env
 # CDK asset staging directory
 /infra/.cdk.staging
 /infra/cdk.out
+
+/.env
+/.node_modules
