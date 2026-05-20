@@ -30,3 +30,6 @@ export declare function catalogSQS(event: SQSEvent): Promise<{
     statusCode: number;
     body: string;
 }>;
+export declare function authorizationDemo(event: any): Promise<{
+    message: string;
+}>;

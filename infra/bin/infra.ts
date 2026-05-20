@@ -6,10 +6,13 @@ import { HelloS3tack } from "../lib/hello-s3/hello-s3-stack";
 import { ImportStack } from "../lib/product-lambda/import-stack";
 import { ProductSQSStack } from "../lib/product-sqs/product-sqs-stack";
 import { ProductSNSStack } from "../lib/product-sns/product-sns-stack";
-
+import { AuthorizerDemoStack } from "../lib/product-lambda/authorizer-stack";
+import { AuthorizerLambdaStack } from "../lib/product-lambda/authorization-lambda-stack";
 const app = new cdk.App();
 //new TODOStack(app, "TodoStack");
 new ProductLambdaStack(app, "ProductLambdaStack", {});
 //new ImportStack(app, "ImportS3Stack", {});
 //new ProductSQSStack(app, "ProductSqsStack");
 //new ProductSNSStack(app, "ProductSnsStack");
+new AuthorizerDemoStack(app, "AuthorizaerDemoStack");
+new AuthorizerLambdaStack(app, "AuthorizerLambdaStack");

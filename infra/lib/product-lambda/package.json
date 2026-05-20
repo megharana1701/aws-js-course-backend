@@ -1,0 +1,18 @@
+{
+  "name": "product-lambda",
+  "version": "1.0.0",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "types": "./handler.d.ts",
+  "description": "",
+  "dependencies": {
+    "csv-parser": "^3.2.1",
+    "dotenv": "^17.4.2",
+    "stream": "^0.0.3",
+    "util": "^0.12.5"
+  }
+}
